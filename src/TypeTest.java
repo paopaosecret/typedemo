@@ -1,7 +1,4 @@
-import java.lang.reflect.Field;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
-import java.lang.reflect.TypeVariable;
+import java.lang.reflect.*;
 
 /**
  * Created by zhaobing04 on 2019/2/14.
@@ -9,9 +6,13 @@ import java.lang.reflect.TypeVariable;
 public class TypeTest {
 
     public static void main(String args[]){
-//        testParameterizedType();
+        testParameterizedType();
 
-        testTypeVariable();
+//        testTypeVariable();
+
+//        testGeenericArrayType();
+
+//        testWildcardType();
     }
 
 
@@ -27,6 +28,7 @@ public class TypeTest {
             }
             getParameterizedTypeMes("map" );
             getParameterizedTypeMes("entry" );
+            getParameterizedTypeMes("aList");
 
         } catch (NoSuchFieldException e) {
             e.printStackTrace();
@@ -44,7 +46,10 @@ public class TypeTest {
         System.out.println("---------------------------------------------------------");
         System.out.println(f.getGenericType());
         boolean b = f.getGenericType() instanceof ParameterizedType;
-        System.out.println(b);
+        System.out.println("is ParameterizedType : " + b);
+
+        boolean c = f.getGenericType() instanceof Class;
+        System.out.println("is Class : " + c );
         if(b){
             ParameterizedType pType = (ParameterizedType) f.getGenericType();
             System.out.println(pType.getRawType());
@@ -82,6 +87,49 @@ public class TypeTest {
         }
     }
 
+    public static void testGeenericArrayType(){
+        GenericArrayTypeBean bean = new GenericArrayTypeBean();
+        Field[] fieldList = bean.getClass().getDeclaredFields();
+        if(fieldList != null && fieldList.length > 0){
+            for(Field field : fieldList){
+                Type type = field.getGenericType();
+                System.out.println(field.getName() + " typename = " + type.getTypeName());
+                if(type instanceof GenericArrayType){
+                    System.out.println("----------- type instanceof GenericArrayType -----------");
+                    System.out.println(((GenericArrayType)type).getGenericComponentType());
+                }
 
+            }
+        }
+    }
+
+    public static void testWildcardType(){
+        Field[] fields = WildcardTypeBean.class.getDeclaredFields();
+        if(fields != null && fields.length > 0){
+            for(Field field : fields){
+                Type type = field.getGenericType();
+                System.out.println(field.getName() + "---" + type.getTypeName());
+
+                System.out.println("-------------分段显示---------------------");
+                Type[] types = ((ParameterizedType)type).getActualTypeArguments();
+                for(Type type1 : types){
+                    if(type1 instanceof WildcardType){
+                        System.out.println(((WildcardType)type1).getTypeName());
+                        Type[] wildcardTypeList = ((WildcardType)type1).getUpperBounds();
+                        if(wildcardTypeList != null && wildcardTypeList.length > 0){
+                            for(Type type2 : wildcardTypeList){
+                                if(type2 instanceof Class){
+                                    System.out.println(type2.getTypeName() + "---- is Class类型");
+                                }
+                            }
+                        }
+                    }
+                }
+                System.out.println("");
+
+            }
+        }
+
+    }
 
 }
